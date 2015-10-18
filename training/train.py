@@ -13,7 +13,7 @@ import warnings
 import sys
 import time
 
-import homogeneous_data
+import homogeneous_data as hd
 
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
@@ -24,7 +24,7 @@ from model import init_params, build_model
 from vocab import load_dictionary
 
 # main trainer
-def trainer(X, 
+def trainer(Xs,
             dim_word=620, # word vector dimensionality
             dim=2400, # the number of GRU units
             encoder='gru',
@@ -138,8 +138,10 @@ def trainer(X,
     print 'Optimization'
 
     # Each sentence in the minibatch have same length (for encoder)
-    trainX = homogeneous_data.grouper(X)
-    train_iter = homogeneous_data.HomogeneousData(trainX, batch_size=batch_size, maxlen=maxlen_w)
+    if type(Xs[0]) is not list:
+        Xs = [Xs]
+    trainXs = map(hd.grouper, Xs)
+    train_iters = [hd.HomogeneousData(trainX, batch_size=batch_size, maxlen=maxlen_w) for trainX in trainXs]
 
     uidx = 0
     lrate = 0.01
@@ -148,38 +150,39 @@ def trainer(X,
 
         print 'Epoch ', eidx
 
-        for x, y, z in train_iter:
-            n_samples += len(x)
-            uidx += 1
+        for train_iter in train_iters:
+            for x, y, z in train_iter:
+                n_samples += len(x)
+                uidx += 1
 
-            x, x_mask, y, y_mask, z, z_mask = homogeneous_data.prepare_data(x, y, z, worddict, maxlen=maxlen_w, n_words=n_words)
+                x, x_mask, y, y_mask, z, z_mask = hd.prepare_data(x, y, z, worddict, maxlen=maxlen_w, n_words=n_words)
 
-            if x == None:
-                print 'Minibatch with zero sample under length ', maxlen_w
-                uidx -= 1
-                continue
+                if x == None:
+                    print 'Minibatch with zero sample under length ', maxlen_w
+                    uidx -= 1
+                    continue
 
-            ud_start = time.time()
-            cost = f_grad_shared(x, x_mask, y, y_mask, z, z_mask)
-            f_update(lrate)
-            ud = time.time() - ud_start
+                ud_start = time.time()
+                cost = f_grad_shared(x, x_mask, y, y_mask, z, z_mask)
+                f_update(lrate)
+                ud = time.time() - ud_start
 
-            if numpy.isnan(cost) or numpy.isinf(cost):
-                print 'NaN detected'
-                return 1., 1., 1.
+                if numpy.isnan(cost) or numpy.isinf(cost):
+                    print 'NaN detected'
+                    return 1., 1., 1.
 
-            if numpy.mod(uidx, dispFreq) == 0:
-                print 'Epoch ', eidx, 'Update ', uidx, 'Cost ', cost, 'UD ', ud
+                if numpy.mod(uidx, dispFreq) == 0:
+                    print 'Epoch ', eidx, 'Update ', uidx, 'Cost ', cost, 'UD ', ud
 
-            if numpy.mod(uidx, saveFreq) == 0:
-                print 'Saving...',
+                if numpy.mod(uidx, saveFreq) == 0:
+                    print 'Saving...',
 
-                params = unzip(tparams)
-                numpy.savez(saveto, history_errs=[], **params)
-                pkl.dump(model_options, open('%s.pkl'%saveto, 'wb'))
-                print 'Done'
+                    params = unzip(tparams)
+                    numpy.savez(saveto, history_errs=[], **params)
+                    pkl.dump(model_options, open('%s.pkl'%saveto, 'wb'))
+                    print 'Done'
 
-        print 'Seen %d samples'%n_samples
+            print 'Seen %d samples'%n_samples
 
 if __name__ == '__main__':
     pass
