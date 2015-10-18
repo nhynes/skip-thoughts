@@ -94,10 +94,15 @@ def gru_layer(tparams, state_below, init_state, options, prefix='gru', mask=None
             return _x[:, :, n*dim:(n+1)*dim]
         return _x[:, n*dim:(n+1)*dim]
 
+    # state_below is <steps,[ samples?,] data>
     state_below_ = tensor.dot(state_below, tparams[_p(prefix, 'W')]) + tparams[_p(prefix, 'b')]
+    # W is [Wr; Wz]
     state_belowx = tensor.dot(state_below, tparams[_p(prefix, 'Wx')]) + tparams[_p(prefix, 'bx')]
+    # Wx, bx are weights of input x on next state proposal
     U = tparams[_p(prefix, 'U')]
+    # U is [Ur; Uz]
     Ux = tparams[_p(prefix, 'Ux')]
+    # Ux is weight of previous hidden state on next state proposal
 
     def _step_slice(m_, x_, xx_, h_, U, Ux):
         preact = tensor.dot(h_, U)
@@ -106,11 +111,14 @@ def gru_layer(tparams, state_below, init_state, options, prefix='gru', mask=None
         r = tensor.nnet.sigmoid(_slice(preact, 0, dim))
         u = tensor.nnet.sigmoid(_slice(preact, 1, dim))
 
+        # seems to deviate slightly from the original paper
+        # r prod Uh instead of U(r prod h)
+        # preactx = xx_ + tensor.dot(Ux, (r * h_))
         preactx = tensor.dot(h_, Ux)
         preactx = preactx * r
         preactx = preactx + xx_
 
-        h = tensor.tanh(preactx)
+        h = tensor.tanh(preactx) # h_proposed
 
         h = u * h_ + (1. - u) * h
         h = m_[:,None] * h + (1. - m_)[:,None] * h_

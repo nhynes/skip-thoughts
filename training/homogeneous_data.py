@@ -13,9 +13,9 @@ class HomogeneousData():
         self.reset()
 
     def prepare(self):
-        self.caps = self.data[0]
-        self.feats = self.data[1]
-        self.feats2 = self.data[2]
+        self.caps = self.data[0]        # source
+        self.feats = self.data[1]       # forward
+        self.feats2 = self.data[2]      # backward
 
         # find the unique lengths
         self.lengths = [len(cc.split()) for cc in self.caps]
@@ -78,15 +78,16 @@ def prepare_data(seqs_x, seqs_y, seqs_z, worddict, maxlen=None, n_words=20000):
     """
     Put the data into format useable by the model
     """
+    UNK = 1
     seqsX = []
     seqsY = []
     seqsZ = []
     for cc in seqs_x:
-        seqsX.append([worddict[w] if worddict[w] < n_words else 1 for w in cc.split()])
+        seqsX.append([worddict[w] if worddict[w] < n_words else UNK for w in cc.split()])
     for cc in seqs_y:
-        seqsY.append([worddict[w] if worddict[w] < n_words else 1 for w in cc.split()])
+        seqsY.append([worddict[w] if worddict[w] < n_words else UNK for w in cc.split()])
     for cc in seqs_z:
-        seqsZ.append([worddict[w] if worddict[w] < n_words else 1 for w in cc.split()])
+        seqsZ.append([worddict[w] if worddict[w] < n_words else UNK for w in cc.split()])
     seqs_x = seqsX
     seqs_y = seqsY
     seqs_z = seqsZ
