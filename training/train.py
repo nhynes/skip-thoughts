@@ -40,6 +40,7 @@ def trainer(Xs,
             saveto='/u/rkiros/research/semhash/models/toy.npz',
             dictionary='/ais/gobi3/u/rkiros/bookgen/book_dictionary_large.pkl',
             saveFreq=1000,
+            val_split=0.1,
             reload_=False):
 
     # Model options
@@ -140,8 +141,11 @@ def trainer(Xs,
     # Each sentence in the minibatch have same length (for encoder)
     if type(Xs[0]) is not list:
         Xs = [Xs]
-    trainXs = map(hd.grouper, Xs)
+    partition_ind = int(len(Xs) * (1 - val_split))
+    trainXs = map(hd.grouper, Xs[:partition_ind])
+    valXs = map(hd.grouper, Xs[partition_ind:])
     train_iters = [hd.HomogeneousData(trainX, batch_size=batch_size, maxlen=maxlen_w) for trainX in trainXs]
+    val_iters = [hd.HomogeneousData(valX, batch_size=batch_size, maxlen=maxlen_w) for valX in valXs]
 
     uidx = 0
     lrate = 0.01
@@ -175,11 +179,19 @@ def trainer(Xs,
                     print 'Epoch ', eidx, 'Update ', uidx, 'Cost ', cost, 'UD ', ud
 
                 if numpy.mod(uidx, saveFreq) == 0:
-                    print 'Saving...',
+                    val_logprob = n_val_samples = 0
+                    for val_iter in val_iters:
+                        for x, y, z in val_iter:
+                            n_val_samples += len(x)
+                            x, x_mask, y, y_mask, z, z_mask = hd.prepare_data(x, y, z, worddict, maxlen=maxlen_w, n_words=n_words)
+                            val_logprob += f_log_probs(x, x_mask, y, y_mask, z, z_mask)
+                    val_logprob /= n_val_samples
+                    print('LOGPROB: %s' % val_logprob)
 
+                    print 'Saving...',
                     params = unzip(tparams)
-                    numpy.savez(saveto, history_errs=[], **params)
-                    pkl.dump(model_options, open('%s.pkl'%saveto, 'wb'))
+                    numpy.savez('%s_%.3f' % (saveto, val_logprob), history_errs=[], **params)
+                    pkl.dump(model_options, open('%s_%.3f.pkl'%(saveto, val_logprob), 'wb'))
                     print 'Done'
 
             print 'Seen %d samples'%n_samples
