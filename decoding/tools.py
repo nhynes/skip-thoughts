@@ -16,11 +16,16 @@ from search import gen_sample
 #-----------------------------------------------------------------------------#
 # Specify model and dictionary locations here
 #-----------------------------------------------------------------------------#
-path_to_model = '/u/rkiros/research/semhash/models/toydec.npz'
-path_to_dictionary = '/ais/gobi3/u/rkiros/flickr8k/dictionary.pkl'
+PATH_TO_MODEL = '/u/rkiros/research/semhash/models/toydec.npz'
+PATH_TO_PARAMS = '/u/rkiros/research/semhash/models/toydec.npz'
+PATH_TO_DICTIONARY = '/ais/gobi3/u/rkiros/flickr8k/dictionary.pkl'
 #-----------------------------------------------------------------------------#
 
-def load_model():
+def load_model(
+        path_to_model=PATH_TO_MODEL,            # model opts (.pkl)
+        path_to_params=PATH_TO_PARAMS,          # model params (.npz)
+        path_to_dictionary=PATH_TO_DICTIONARY
+        ):
     """
     Load a trained model for decoding
     """

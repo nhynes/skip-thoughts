@@ -22,12 +22,15 @@ from model import init_params, build_encoder, build_encoder_w2v
 #-----------------------------------------------------------------------------#
 # Specify model and dictionary locations here
 #-----------------------------------------------------------------------------#
-path_to_model = '/u/rkiros/research/semhash/models/toy.npz'
-path_to_dictionary = '/ais/gobi3/u/rkiros/bookgen/book_dictionary_large.pkl'
-path_to_word2vec = '/ais/gobi3/u/rkiros/word2vec/GoogleNews-vectors-negative300.bin'
+PATH_TO_MODEL = '/u/rkiros/research/semhash/models/toy.npz'
+PATH_TO_DICTIONARY = '/ais/gobi3/u/rkiros/bookgen/book_dictionary_large.pkl'
+PATH_TO_WORD2VEC = '/ais/gobi3/u/rkiros/word2vec/GoogleNews-vectors-negative300.bin'
 #-----------------------------------------------------------------------------#
 
-def load_model(embed_map=None):
+def load_model(embed_map=None,
+        path_to_model=PATH_TO_MODEL,
+        path_to_dictionary=PATH_TO_DICTIONARY,
+        path_to_word2vec=PATH_TO_WORD2VEC):
     """
     Load all model components + apply vocab expansion
     """
@@ -46,7 +49,7 @@ def load_model(embed_map=None):
 
     # Load model options
     print 'Loading model options...'
-    with open('%s.pkl'%path_to_model, 'rb') as f:
+    with open(path_to_model, 'rb') as f:
         options = pkl.load(f)
 
     # Load parameters
@@ -149,7 +152,7 @@ def preprocess(text):
         X.append(result)
     return X
 
-def load_googlenews_vectors():
+def load_googlenews_vectors(path_to_word2vec=PATH_TO_WORD2VEC):
     """
     load the word2vec GoogleNews vectors
     """
