@@ -4,6 +4,7 @@ Helper functions for skip-thoughts
 import theano
 import theano.tensor as tensor
 import numpy
+import warnings
 
 from collections import OrderedDict
 
