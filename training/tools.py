@@ -22,15 +22,19 @@ from model import init_params, build_encoder, build_encoder_w2v
 #-----------------------------------------------------------------------------#
 # Specify model and dictionary locations here
 #-----------------------------------------------------------------------------#
-PATH_TO_MODEL = '/u/rkiros/research/semhash/models/toy.npz'
+PATH_TO_MODEL = '/u/rkiros/research/semhash/models/toy.pkl'
+PATH_TO_PARAMS = '/u/rkiros/research/semhash/models/toy.npz'
 PATH_TO_DICTIONARY = '/ais/gobi3/u/rkiros/bookgen/book_dictionary_large.pkl'
 PATH_TO_WORD2VEC = '/ais/gobi3/u/rkiros/word2vec/GoogleNews-vectors-negative300.bin'
 #-----------------------------------------------------------------------------#
 
-def load_model(embed_map=None,
-        path_to_model=PATH_TO_MODEL,
+def load_model(
+        embed_map=None,
+        path_to_model=PATH_TO_MODEL,            # model opts (.pkl)
+        path_to_params=PATH_TO_PARAMS,          # model params (.npz)
         path_to_dictionary=PATH_TO_DICTIONARY,
-        path_to_word2vec=PATH_TO_WORD2VEC):
+        path_to_word2vec=PATH_TO_WORD2VEC
+        ):
     """
     Load all model components + apply vocab expansion
     """
@@ -55,7 +59,7 @@ def load_model(embed_map=None,
     # Load parameters
     print 'Loading model parameters...'
     params = init_params(options)
-    params = load_params(path_to_model, params)
+    params = load_params(path_to_params, params)
     tparams = init_tparams(params)
 
     # Extractor functions

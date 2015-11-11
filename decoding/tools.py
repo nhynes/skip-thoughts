@@ -50,7 +50,7 @@ def load_model(
     # Load parameters
     print 'Loading model parameters...'
     params = init_params(options)
-    params = load_params(path_to_model, params)
+    params = load_params(path_to_params, params)
     tparams = init_tparams(params)
 
     # Sampler.
