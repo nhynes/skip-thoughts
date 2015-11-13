@@ -80,16 +80,19 @@ class HomogeneousData():
 def prepare_data(caps, features, worddict, model, maxlen=None, n_words=10000):
     """
     Put data into format useable by the model
+    caps     - tokenized target sentences (X)
+    features - vectors on which to condition (C)
     """
     seqs = []
     feat_list = []
+    lengths = []
     for i, cc in enumerate(caps):
-        seqs.append([worddict[w] if worddict[w] < n_words else 1 for w in cc.split()])
+        word_inds = [worddict[w] if worddict[w] < n_words else 1 for w in cc.split()]
+        seqs.append(word_inds)
+        lengths.append(len(word_inds))
         feat_list.append(features[i])
 
-    lengths = [len(s) for s in seqs]
-
-    if maxlen != None and numpy.max(lengths) >= maxlen:
+    if maxlen != None and max(lengths) >= maxlen:
         new_seqs = []
         new_feat_list = []
         new_lengths = []
