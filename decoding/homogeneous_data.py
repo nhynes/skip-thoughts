@@ -84,15 +84,14 @@ def prepare_data(caps, features, worddict, model, maxlen=None, n_words=10000):
     features - vectors on which to condition (C)
     """
     seqs = []
-    feat_list = []
     lengths = []
     for i, cc in enumerate(caps):
         word_inds = [worddict[w] if worddict[w] < n_words else 1 for w in cc.split()]
         seqs.append(word_inds)
         lengths.append(len(word_inds))
-        feat_list.append(features[i])
 
     if maxlen != None and max(lengths) >= maxlen:
+        raise NotImplemented('Need to filter numpy array')
         new_seqs = []
         new_feat_list = []
         new_lengths = []
@@ -108,12 +107,7 @@ def prepare_data(caps, features, worddict, model, maxlen=None, n_words=10000):
         if len(lengths) < 1:
             return None, None, None
 
-    # Compute skip-thought vectors for this mini-batch
-    feat_list = skipthoughts.encode(model, feat_list, use_eos=False, verbose=False)
-
-    y = numpy.zeros((len(feat_list), len(feat_list[0]))).astype('float32')
-    for idx, ff in enumerate(feat_list):
-        y[idx,:] = ff
+    y = features # precomputed context
 
     n_samples = len(seqs)
     maxlen = numpy.max(lengths)+1

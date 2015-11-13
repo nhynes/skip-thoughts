@@ -27,7 +27,6 @@ from search import gen_sample
 
 # main trainer
 def trainer(X, C, stmodel,
-            dimctx=4800, #vector dimensionality
             dim_word=620, # word vector dimensionality
             dim=1600, # the number of GRU units
             encoder='gru',
@@ -47,6 +46,8 @@ def trainer(X, C, stmodel,
             saveFreq=1000,
             sampleFreq=100,
             reload_=False):
+
+    dimctx = C.shape[1]
 
     # Model options
     model_options = {}
