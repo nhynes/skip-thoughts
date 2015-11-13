@@ -57,6 +57,8 @@ def build_model(tparams, options):
 
     # Index into the word embedding matrix, shift it forward in time
     emb = tparams['Wemb'][x.flatten()].reshape([n_timesteps, n_samples, options['dim_word']])
+    # make eos the first word (it has no prev word context),
+    # throw out last word (it doesn't predict anything)
     emb_shifted = tensor.zeros_like(emb)
     emb_shifted = tensor.set_subtensor(emb_shifted[1:], emb[:-1])
     emb = emb_shifted
