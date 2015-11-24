@@ -25,6 +25,7 @@ from vocab import load_dictionary
 
 # main trainer
 def trainer(Xs,
+            Xs_val,
             dim_word=620, # word vector dimensionality
             dim=2400, # the number of GRU units
             encoder='gru',
@@ -40,7 +41,6 @@ def trainer(Xs,
             saveto='/u/rkiros/research/semhash/models/toy.npz',
             dictionary='/ais/gobi3/u/rkiros/bookgen/book_dictionary_large.pkl',
             saveFreq=1000,
-            val_split=0.1,
             reload_=False):
 
     # Model options
@@ -141,9 +141,8 @@ def trainer(Xs,
     # Each sentence in the minibatch have same length (for encoder)
     if type(Xs[0]) is not list:
         Xs = [Xs]
-    partition_ind = int(len(Xs) * (1 - val_split))
-    trainXs = map(hd.grouper, Xs[:partition_ind])
-    valXs = map(hd.grouper, Xs[partition_ind:])
+    trainXs = map(hd.grouper, Xs)
+    valXs = map(hd.grouper, Xs_val)
     train_iters = [hd.HomogeneousData(trainX, batch_size=batch_size, maxlen=maxlen_w) for trainX in trainXs]
     val_iters = [hd.HomogeneousData(valX, batch_size=batch_size, maxlen=maxlen_w) for valX in valXs]
 
