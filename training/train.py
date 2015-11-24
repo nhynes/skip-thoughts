@@ -17,10 +17,10 @@ import homogeneous_data as hd
 
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
-from utils import *
+from training_utils import *
 from layers import get_layer, param_init_fflayer, fflayer, param_init_gru, gru_layer
 from optim import adam
-from model import init_params, build_model
+from training_model import init_params, build_model
 from vocab import load_dictionary
 
 # main trainer

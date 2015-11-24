@@ -16,8 +16,8 @@ from scipy.linalg import norm
 from gensim.models import Word2Vec as word2vec
 from sklearn.linear_model import LinearRegression
 
-from utils import load_params, init_tparams
-from model import init_params, build_encoder, build_encoder_w2v
+from training_utils import load_params, init_tparams
+from training_model import init_params, build_encoder, build_encoder_w2v
 
 #-----------------------------------------------------------------------------#
 # Specify model and dictionary locations here
