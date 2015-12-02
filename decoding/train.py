@@ -26,7 +26,8 @@ from vocab import load_dictionary
 from search import gen_sample
 
 # main trainer
-def trainer(X, C, stmodel,
+def trainer(X, C,
+            X_val, C_val,
             dim_word=620, # word vector dimensionality
             dim=1600, # the number of GRU units
             encoder='gru',
@@ -180,7 +181,7 @@ def trainer(X, C, stmodel,
             n_samples += len(x)
             uidx += 1
 
-            x, mask, ctx = homogeneous_data.prepare_data(x, c, worddict, stmodel, maxlen=maxlen_w, n_words=n_words)
+            x, mask, ctx = homogeneous_data.prepare_data(x, c, worddict, maxlen=maxlen_w, n_words=n_words)
 
             if x == None:
                 print 'Minibatch with zero sample under length ', maxlen_w

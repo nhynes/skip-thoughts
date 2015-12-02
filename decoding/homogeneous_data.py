@@ -77,7 +77,7 @@ class HomogeneousData():
     def __iter__(self):
         return self
 
-def prepare_data(caps, features, worddict, model, maxlen=None, n_words=10000):
+def prepare_data(caps, features, worddict, maxlen=None, n_words=10000):
     """
     Put data into format useable by the model
     caps     - tokenized target sentences (X)
