@@ -166,7 +166,9 @@ def trainer(X, C, stmodel,
 
     # Each sentence in the minibatch have same length (for encoder)
     train_iter = homogeneous_data.HomogeneousData([X,C], batch_size=batch_size, maxlen=maxlen_w)
+    val_iter = homogeneous_data.HomogeneousData([X_val,C_val], batch_size=batch_size, maxlen=maxlen_w)
 
+    f_progress = open('%s_progress.txt' % saveto, 'w', 1)
     uidx = 0
     lrate = 0.01
     for eidx in xrange(max_epochs):
@@ -198,11 +200,20 @@ def trainer(X, C, stmodel,
                 print 'Epoch ', eidx, 'Update ', uidx, 'Cost ', cost, 'UD ', ud
 
             if numpy.mod(uidx, saveFreq) == 0:
+                val_logprob = n_val_samples = 0
+                for xv, cv in val_iter:
+                    n_val_samples += len(xv)
+                    val_x, val_mask, val_ctx = homogeneous_data.prepare_data(xv, cv, worddict, maxlen=maxlen_w, n_words=n_words)
+                    val_logprob += f_log_probs(val_x, val_mask, val_ctx)
+                val_logprob /= n_val_samples
+                print 'LOGPROB: %s' % val_logprob
+                f_progress.write('%s\n' % val_logprob)
+
                 print 'Saving...',
 
                 params = unzip(tparams)
-                numpy.savez(saveto, history_errs=[], **params)
-                pkl.dump(model_options, open('%s.pkl'%saveto, 'wb'))
+                numpy.savez('%s_%.3f' % (saveto, val_logprob), history_errs=[], **params)
+                pkl.dump(model_options, open('%s_%.3f.pkl'%(saveto, val_logprob), 'wb'))
                 print 'Done'
 
             if numpy.mod(uidx, sampleFreq) == 0:

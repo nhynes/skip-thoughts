@@ -139,13 +139,14 @@ def trainer(Xs,
     print 'Optimization'
 
     # Each sentence in the minibatch have same length (for encoder)
-    if type(Xs[0]) is not list:
-        Xs = [Xs]
+    if type(Xs[0]) is not list: Xs = [Xs]
+    if type(Xs_val[0]) is not list: Xs_val = [Xs_val]
     trainXs = map(hd.grouper, Xs)
     valXs = map(hd.grouper, Xs_val)
     train_iters = [hd.HomogeneousData(trainX, batch_size=batch_size, maxlen=maxlen_w) for trainX in trainXs]
     val_iters = [hd.HomogeneousData(valX, batch_size=batch_size, maxlen=maxlen_w) for valX in valXs]
 
+    f_progress = open('%s_progress.txt' % saveto, 'w', 1)
     uidx = 0
     lrate = 0.01
     for eidx in xrange(max_epochs):
@@ -185,7 +186,8 @@ def trainer(Xs,
                             x, x_mask, y, y_mask, z, z_mask = hd.prepare_data(x, y, z, worddict, maxlen=maxlen_w, n_words=n_words)
                             val_logprob += f_log_probs(x, x_mask, y, y_mask, z, z_mask)
                     val_logprob /= n_val_samples
-                    print('LOGPROB: %s' % val_logprob)
+                    print 'LOGPROB: %s' % val_logprob
+                    f_progress.write('%s\n' % val_logprob)
 
                     print 'Saving...',
                     params = unzip(tparams)
