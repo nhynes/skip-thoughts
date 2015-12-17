@@ -40,6 +40,7 @@ def trainer(Xs,
             batch_size = 64,
             saveto='/u/rkiros/research/semhash/models/toy.npz',
             dictionary='/ais/gobi3/u/rkiros/bookgen/book_dictionary_large.pkl',
+            embeddings=None,
             saveFreq=1000,
             reload_=False):
 
@@ -59,6 +60,7 @@ def trainer(Xs,
     model_options['batch_size'] = batch_size
     model_options['saveto'] = saveto
     model_options['dictionary'] = dictionary
+    model_options['embeddings'] = embeddings
     model_options['saveFreq'] = saveFreq
     model_options['reload_'] = reload_
 
@@ -74,6 +76,21 @@ def trainer(Xs,
     print 'Loading dictionary...'
     worddict = load_dictionary(dictionary)
 
+    # Load pre-trained embeddings, if applicable
+    if embeddings:
+        print 'Loading embeddings...'
+        from gensim.models import Word2Vec as word2vec
+        embed_map = word2vec.load_word2vec_format(embeddings, binary=True)
+        model_options['dim_word'] = dim_word = embed_map.vector_size
+        preemb = norm_weight(n_words, dim_word)
+        preemb_mask = numpy.ones((n_words, 1), dtype='float32')
+        for w,i in worddict.items()[:n_words-2]:
+            if w in embed_map:
+                preemb[i] = embed_map[w]
+                preemb_mask[i] = 0 # don't propagate gradients into pretrained embs
+    else:
+        preemb = None
+
     # Inverse dictionary
     word_idict = dict()
     for kk, vv in worddict.iteritems():
@@ -82,7 +99,7 @@ def trainer(Xs,
     word_idict[1] = 'UNK'
 
     print 'Building model'
-    params = init_params(model_options)
+    params = init_params(model_options, preemb=preemb)
     # reload parameters
     if reload_ and os.path.exists(saveto):
         params = load_params(saveto, params)
@@ -130,6 +147,10 @@ def trainer(Xs,
                                            g / tensor.sqrt(g2) * grad_clip,
                                            g))
         grads = new_grads
+
+    if embeddings:
+        param_preemb_mask = theano.shared(preemb_mask, name='preemb_mask', broadcastable=(False, True))
+        grads[0] *= param_preemb_mask
 
     lr = tensor.scalar(name='lr')
     print 'Building optimizers...',

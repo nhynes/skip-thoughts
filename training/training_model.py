@@ -11,14 +11,18 @@ from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 from training_utils import _p, ortho_weight, norm_weight, tanh
 from layers import get_layer, param_init_fflayer, fflayer, param_init_gru, gru_layer
 
-def init_params(options):
+def init_params(options, preemb=None):
     """
     Initialize all parameters
     """
     params = OrderedDict()
 
     # Word embedding
-    params['Wemb'] = norm_weight(options['n_words'], options['dim_word'])
+    if preemb == None:
+        params['Wemb'] = norm_weight(options['n_words'], options['dim_word'])
+    else:
+        print('using preemb')
+        params['Wemb'] = preemb
 
     # Encoder
     params = get_layer(options['encoder'])[0](options, params, prefix='encoder',
