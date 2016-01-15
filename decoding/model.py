@@ -115,6 +115,8 @@ def build_sampler(tparams, options, trng):
                                             mask=None,
                                             one_step=True)
     next_state = proj[0]
+    if next_state.ndim > 2:
+        next_state = next_state[0]
 
     # output
     if options['doutput']:
